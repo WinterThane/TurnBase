@@ -11,6 +11,7 @@ namespace TurnBase
 
         public Vector2 Position;
         public Sprite Sprite;
+        public float Depth;
 
         public Rectangle Bounds
         {
@@ -27,7 +28,7 @@ namespace TurnBase
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            Sprite.Draw(spriteBatch, Position);
+            Sprite.Draw(spriteBatch, Position, Depth);
         }
 
         public Rectangle NormalizeBounds(Rectangle rect)

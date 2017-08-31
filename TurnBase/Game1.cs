@@ -20,6 +20,7 @@ namespace TurnBase
         private const float PLAYER_SPEED = 3.0f;
         private const float ENEMY_SPEED = 3.0f;
         private const int PROJECTILE_SPEED = 10;
+        private const int LEFT_PANEL = 250;
 
         private string staticText = "Press Enter to start\nPress Space to change actor\nPress F to fire a fireball";
         private string actorText = "Current actor selected: ";
@@ -34,6 +35,8 @@ namespace TurnBase
         Actor player;
         Actor enemy;
         Shot fireball;
+        Panel textPanel;
+
 
         SpriteFont debugText;
         Vector2 debugActorPosition;
@@ -54,22 +57,24 @@ namespace TurnBase
         protected override void Initialize()
         {
             playerAreaLimit = new Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            fireball = new Shot();
-            fireball.Velocity = new Point(PROJECTILE_SPEED, 0);
+            
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
+            fireball = new Shot();
+            fireball.Velocity = new Point(PROJECTILE_SPEED, 0);
+            fireball.Texture = Content.Load<Texture2D>("fireball");
             debugText = Content.Load<SpriteFont>("Fonts\\debugfont");
 
             fillTexture = Content.Load<Texture2D>("fill");
             sky = Content.Load<Texture2D>("cloudMap");
-            fireball.Texture = Content.Load<Texture2D>("fireball");
+            
 
             LoadGround();
+            LoadTextPanel();
             LoadPlayer();
             LoadEnemy();
         }
@@ -81,15 +86,26 @@ namespace TurnBase
                 groundTexture[i] = new Ground();
                 groundTexture[i].Sprite = new Sprite(Content.Load<Texture2D>("grass"), 1, 1, 1);
                 groundTexture[i].Position = new Vector2(64 * i, SCREEN_HEIGHT - 32);
+                groundTexture[i].Depth = 0.9f;
             }
         }
+
+        private void LoadTextPanel()
+        {
+            textPanel = new Panel(Vector2.Zero, new Vector2(LEFT_PANEL, 110))
+            {
+                Texture = Content.Load<Texture2D>("panel")
+            };
+        }
+
 
         private void LoadPlayer()
         {
             player = new Actor()
             {
                 Sprite = new Sprite(Content.Load<Texture2D>("Player\\player"), 8, 1, 1),
-                Position = new Vector2(200, SCREEN_HEIGHT - 80)
+                Position = new Vector2(LEFT_PANEL + 200, SCREEN_HEIGHT - 80),
+                Depth = 0.5f                
             };
         }
 
@@ -98,7 +114,8 @@ namespace TurnBase
             enemy = new Actor()
             {
                 Sprite = new Sprite(Content.Load<Texture2D>("Enemy\\enemy"), 8, 1, 1),
-                Position = new Vector2(SCREEN_WIDTH - 200, SCREEN_HEIGHT - 80)
+                Position = new Vector2(SCREEN_WIDTH - 200, SCREEN_HEIGHT - 80),
+                Depth = 0.5f
             };
         }
 
@@ -198,9 +215,9 @@ namespace TurnBase
         {
             GraphicsDevice.Clear(Color.Black);
 
-            spriteBatch.Begin();
+            spriteBatch.Begin(SpriteSortMode.BackToFront, null);
             
-            spriteBatch.Draw(sky, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
+            spriteBatch.Draw(sky, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 1f);
             spriteBatch.DrawString(debugText, staticText, new Vector2(10, 10), Color.White);
             spriteBatch.DrawString(debugText, actorText + turn.ToString(), new Vector2(10, 65), Color.White);
             spriteBatch.DrawString(debugText, "Position: " + debugActorPosition.ToString(), new Vector2(10, 85), Color.White);
@@ -210,6 +227,8 @@ namespace TurnBase
                 ground.Draw(spriteBatch);
             }
 
+            textPanel.Draw(spriteBatch);
+            //spriteBatch.Draw(texture, new Rectangle(x,y, width, height), Color.White);
             player.Draw(spriteBatch);
             enemy.Draw(spriteBatch);
             fireball.Draw(spriteBatch);
@@ -278,5 +297,12 @@ namespace TurnBase
         {
             fireball.Position = new Point(fireball.Origin.X, 0);
         }
+
+        //public Texture2D MakeTexture(GraphicsDevice graphics)
+        //{
+        //    Texture2D texture = new Texture2D(graphics, 1, 1, false, SurfaceFormat.Color);
+        //    texture.SetData<Color>(new Color[] { Color.Black });
+        //    return texture;
+        //}
     }
 }

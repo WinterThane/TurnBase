@@ -93,9 +93,9 @@ namespace TurnBase
             }           
         }
 
-        public void Draw(SpriteBatch spriteBatch, Vector2 position)
+        public void Draw(SpriteBatch spriteBatch, Vector2 position, float depth)
         {
-            spriteBatch.Draw(Texture, position, FrameBounds, Color.White, 0f, Origin, 1f, SpriteEffects.None, 0f);
+            spriteBatch.Draw(Texture, position, FrameBounds, Color.White, 0f, Origin, 1f, SpriteEffects.None, depth);
         }
     }
 }
