@@ -11,8 +11,10 @@ namespace TurnBase
 
         private const int SCREEN_WIDTH = 1024;
         private const int SCREEN_HEIGHT = 764;
-        const float PLAYER_SPEED = 3.0f;
-        const float ENEMY_SPEED = 3.0f;
+        private const float PLAYER_SPEED = 3.0f;
+        private const float ENEMY_SPEED = 3.0f;
+
+        private Rectangle playerAreaLimit;
 
         Texture2D fillTexture;
         Texture2D sky;
@@ -33,6 +35,7 @@ namespace TurnBase
 
         protected override void Initialize()
         {
+            playerAreaLimit = new Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
             base.Initialize();
         }
 
@@ -110,6 +113,7 @@ namespace TurnBase
                 player.Update(gameTime, keyState);
             }
 
+            ImposeMovingLimits();
             player.Position += direction * PLAYER_SPEED;
 
             base.Update(gameTime);
@@ -147,6 +151,25 @@ namespace TurnBase
 
             //spriteBatch.Draw(player.Sprite.Texture, Vector2.Zero, player.NormalizeBounds(collisionRect), Color.White);
             //spriteBatch.Draw(enemy.Sprite.Texture, Vector2.Zero, enemy.NormalizeBounds(collisionRect), Color.White);
+        }
+
+        private void ImposeMovingLimits()
+        {
+            var location = player.Position;
+
+            if (location.X < playerAreaLimit.X)
+                location.X = playerAreaLimit.X;
+
+            if (location.X > (playerAreaLimit.Right - player.Bounds.Width))
+                location.X = (playerAreaLimit.Right - player.Bounds.Width);
+
+            if (location.Y < playerAreaLimit.Y)
+                location.Y = playerAreaLimit.Y;
+
+            if (location.Y > (playerAreaLimit.Bottom - player.Bounds.Height))
+                location.Y = (playerAreaLimit.Bottom - player.Bounds.Height);
+
+            player.Position = location;
         }
     }
 }
