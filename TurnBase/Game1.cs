@@ -4,23 +4,41 @@ using Microsoft.Xna.Framework.Input;
 
 namespace TurnBase
 {
+    enum Turn
+    {
+        Player,
+        Enemy
+    }
+
     public class Game1 : Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
         private const int SCREEN_WIDTH = 1024;
-        private const int SCREEN_HEIGHT = 764;
+        private const int SCREEN_HEIGHT = 400;
         private const float PLAYER_SPEED = 3.0f;
         private const float ENEMY_SPEED = 3.0f;
+        private const int PROJECTILE_SPEED = 10;
+
+        private string staticText = "Press Enter to start\nPress Space to change actor\nPress F to fire a fireball";
+        private string actorText = "Current actor selected: ";
 
         private Rectangle playerAreaLimit;
+
+        bool isRunning = false;
 
         Texture2D fillTexture;
         Texture2D sky;
         Ground[] groundTexture = new Ground[100];
         Actor player;
         Actor enemy;
+        Shot fireball;
+
+        SpriteFont debugText;
+        Vector2 debugActorPosition;
+
+        Turn turn = Turn.Player;
 
         public Game1()
         {
@@ -36,6 +54,8 @@ namespace TurnBase
         protected override void Initialize()
         {
             playerAreaLimit = new Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+            fireball = new Shot();
+            fireball.Velocity = new Point(PROJECTILE_SPEED, 0);
             base.Initialize();
         }
 
@@ -43,8 +63,11 @@ namespace TurnBase
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            debugText = Content.Load<SpriteFont>("Fonts\\debugfont");
+
             fillTexture = Content.Load<Texture2D>("fill");
             sky = Content.Load<Texture2D>("cloudMap");
+            fireball.Texture = Content.Load<Texture2D>("fireball");
 
             LoadGround();
             LoadPlayer();
@@ -89,34 +112,86 @@ namespace TurnBase
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            var keyState = Keyboard.GetState();
-            var direction = Vector2.Zero;
+            if(isRunning)
+            {
+                var keyState = Keyboard.GetState();
+                if (keyState.IsKeyDown(Keys.Space))
+                {
+                    SetTurn();
+                }
 
-            if(keyState.IsKeyDown(Keys.W))
-            {
-                direction.Y--;
-                player.Update(gameTime, keyState);
-            }
-            if (keyState.IsKeyDown(Keys.S))
-            {
-                direction.Y++;
-                player.Update(gameTime, keyState);
-            }
-            if (keyState.IsKeyDown(Keys.A))
-            {
-                direction.X--;
-                player.Update(gameTime, keyState);
-            }
-            if (keyState.IsKeyDown(Keys.D))
-            {
-                direction.X++;
-                player.Update(gameTime, keyState);
-            }
+                fireball.Update();
+                CheckFire();
 
-            ImposeMovingLimits();
-            player.Position += direction * PLAYER_SPEED;
+                MovementControl(gameTime, keyState, turn);
+            }
+            else if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+            {
+                isRunning = true;
+                ResetProjectile();
+            }
 
             base.Update(gameTime);
+        }
+
+        private void MovementControl(GameTime gameTime, KeyboardState keyState, Turn setTurn)
+        {
+            var direction = Vector2.Zero;
+
+            if (setTurn == Turn.Player)
+            {
+                //if (keyState.IsKeyDown(Keys.W))
+                //{
+                //    direction.Y--;
+                //    player.Update(gameTime, keyState);
+                //}
+                if (keyState.IsKeyDown(Keys.S))
+                {
+                    direction.Y++;
+                    player.Update(gameTime, keyState);
+                }
+                if (keyState.IsKeyDown(Keys.A))
+                {
+                    direction.X--;
+                    player.Update(gameTime, keyState);
+                }
+                if (keyState.IsKeyDown(Keys.D))
+                {
+                    direction.X++;
+                    player.Update(gameTime, keyState);
+                }
+
+                ImposeMovingLimits(player);
+                debugActorPosition = player.Position;
+                player.Position += direction * PLAYER_SPEED;
+            }
+            else
+            {
+                //if (keyState.IsKeyDown(Keys.W))
+                //{
+                //    direction.Y--;
+                //    enemy.Update(gameTime, keyState);
+                //}
+                if (keyState.IsKeyDown(Keys.S))
+                {
+                    direction.Y++;
+                    enemy.Update(gameTime, keyState);
+                }
+                if (keyState.IsKeyDown(Keys.A))
+                {
+                    direction.X--;
+                    enemy.Update(gameTime, keyState);
+                }
+                if (keyState.IsKeyDown(Keys.D))
+                {
+                    direction.X++;
+                    enemy.Update(gameTime, keyState);
+                }
+
+                ImposeMovingLimits(enemy);
+                debugActorPosition = enemy.Position;
+                enemy.Position += direction * PLAYER_SPEED;
+            }
         }
 
         protected override void Draw(GameTime gameTime)
@@ -124,7 +199,11 @@ namespace TurnBase
             GraphicsDevice.Clear(Color.Black);
 
             spriteBatch.Begin();
-            spriteBatch.Draw(sky, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 1.5f, SpriteEffects.None, 0f);
+            
+            spriteBatch.Draw(sky, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 0f);
+            spriteBatch.DrawString(debugText, staticText, new Vector2(10, 10), Color.White);
+            spriteBatch.DrawString(debugText, actorText + turn.ToString(), new Vector2(10, 65), Color.White);
+            spriteBatch.DrawString(debugText, "Position: " + debugActorPosition.ToString(), new Vector2(10, 85), Color.White);
 
             foreach (var ground in groundTexture)
             {
@@ -133,6 +212,7 @@ namespace TurnBase
 
             player.Draw(spriteBatch);
             enemy.Draw(spriteBatch);
+            fireball.Draw(spriteBatch);
             DebugDraw();
 
             spriteBatch.End();
@@ -153,23 +233,50 @@ namespace TurnBase
             //spriteBatch.Draw(enemy.Sprite.Texture, Vector2.Zero, enemy.NormalizeBounds(collisionRect), Color.White);
         }
 
-        private void ImposeMovingLimits()
+        private void ImposeMovingLimits(Actor actor)
         {
-            var location = player.Position;
+            var location = actor.Position;
 
-            if (location.X < playerAreaLimit.X)
-                location.X = playerAreaLimit.X;
+            if (location.X < playerAreaLimit.X + 16)
+                location.X = playerAreaLimit.X + 16;
 
-            if (location.X > (playerAreaLimit.Right - player.Bounds.Width))
-                location.X = (playerAreaLimit.Right - player.Bounds.Width);
+            if (location.X > (playerAreaLimit.Right - 16))
+                location.X = (playerAreaLimit.Right - 16);
 
             if (location.Y < playerAreaLimit.Y)
                 location.Y = playerAreaLimit.Y;
 
-            if (location.Y > (playerAreaLimit.Bottom - player.Bounds.Height))
-                location.Y = (playerAreaLimit.Bottom - player.Bounds.Height);
+            if (location.Y > (playerAreaLimit.Bottom - 80))
+                location.Y = (playerAreaLimit.Bottom - 80);
 
-            player.Position = location;
+            actor.Position = location;
+        }
+
+        private void SetTurn()
+        {
+            if(turn == Turn.Player)
+            {
+                turn = Turn.Enemy;
+            }
+            else
+            {
+                turn = Turn.Player;
+            }
+        }
+
+        private void CheckFire()
+        {
+            if ((turn == Turn.Player) && (Keyboard.GetState().IsKeyDown(Keys.F)) && (fireball.Position.X > SCREEN_WIDTH))
+            {
+                int projectileX = (int)player.Position.X;
+                int projectileY = (int)player.Position.Y;
+                fireball.Position = new Point(projectileX, projectileY);
+            }
+        }
+
+        private void ResetProjectile()
+        {
+            fireball.Position = new Point(fireball.Origin.X, 0);
         }
     }
 }

@@ -49,7 +49,7 @@ namespace TurnBase
             Vector2 positionVector = new Vector2(position.X, position.Y);
             Vector2 originVector = new Vector2(Origin.X, Origin.Y);
 
-            spriteBatch.Draw(texture, positionVector, null, Color.White, 0.0f, originVector, 2.0f, SpriteEffects.None, 0.5f);
+            spriteBatch.Draw(texture, positionVector, null, Color.White, 0.0f, originVector, 1.0f, SpriteEffects.None, 0.5f);
         }
     }
 }
