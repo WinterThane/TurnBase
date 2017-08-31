@@ -15,6 +15,7 @@ namespace TurnBase
         const float ENEMY_SPEED = 3.0f;
 
         Texture2D fillTexture;
+        Texture2D sky;
         Ground[] groundTexture = new Ground[100];
         Actor player;
         Actor enemy;
@@ -40,6 +41,7 @@ namespace TurnBase
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             fillTexture = Content.Load<Texture2D>("fill");
+            sky = Content.Load<Texture2D>("cloudMap");
 
             LoadGround();
             LoadPlayer();
@@ -118,6 +120,7 @@ namespace TurnBase
             GraphicsDevice.Clear(Color.Black);
 
             spriteBatch.Begin();
+            spriteBatch.Draw(sky, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 1.5f, SpriteEffects.None, 0f);
 
             foreach (var ground in groundTexture)
             {
