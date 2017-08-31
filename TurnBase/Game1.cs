@@ -37,6 +37,7 @@ namespace TurnBase
         Shot fireball;
         Panel textPanel;
 
+        KeyboardState previousState;
 
         SpriteFont debugText;
         Vector2 debugActorPosition;
@@ -57,7 +58,7 @@ namespace TurnBase
         protected override void Initialize()
         {
             playerAreaLimit = new Rectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            
+            previousState = Keyboard.GetState();
             base.Initialize();
         }
 
@@ -129,10 +130,11 @@ namespace TurnBase
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            if(isRunning)
-            {
-                var keyState = Keyboard.GetState();
-                if (keyState.IsKeyDown(Keys.Space))
+            var keyState = Keyboard.GetState();
+
+            if (isRunning)
+            {           
+                if (keyState.IsKeyDown(Keys.Space) && !previousState.IsKeyDown(Keys.Space))
                 {
                     SetTurn();
                 }
@@ -147,6 +149,8 @@ namespace TurnBase
                 isRunning = true;
                 ResetProjectile();
             }
+
+            previousState = keyState;
 
             base.Update(gameTime);
         }
