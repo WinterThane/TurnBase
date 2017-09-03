@@ -35,7 +35,7 @@ namespace TurnBase
         Actor player;
         Actor enemy;
         Shot fireball;
-        Panel textPanel;
+        Panel debugPanel;
 
         KeyboardState previousState;
 
@@ -72,7 +72,6 @@ namespace TurnBase
 
             fillTexture = Content.Load<Texture2D>("fill");
             sky = Content.Load<Texture2D>("cloudMap");
-            
 
             LoadGround();
             LoadTextPanel();
@@ -93,7 +92,7 @@ namespace TurnBase
 
         private void LoadTextPanel()
         {
-            textPanel = new Panel(Vector2.Zero, new Vector2(LEFT_PANEL, 110))
+            debugPanel = new Panel(new Point(0, 0), new Vector2(LEFT_PANEL, SCREEN_HEIGHT))
             {
                 Texture = Content.Load<Texture2D>("panel")
             };
@@ -231,8 +230,7 @@ namespace TurnBase
                 ground.Draw(spriteBatch);
             }
 
-            textPanel.Draw(spriteBatch);
-            //spriteBatch.Draw(texture, new Rectangle(x,y, width, height), Color.White);
+            debugPanel.Draw(spriteBatch);
             player.Draw(spriteBatch);
             enemy.Draw(spriteBatch);
             fireball.Draw(spriteBatch);
@@ -260,8 +258,8 @@ namespace TurnBase
         {
             var location = actor.Position;
 
-            if (location.X < playerAreaLimit.X + 16)
-                location.X = playerAreaLimit.X + 16;
+            if (location.X < playerAreaLimit.X + 16 + LEFT_PANEL)
+                location.X = playerAreaLimit.X + 16 + LEFT_PANEL;
 
             if (location.X > (playerAreaLimit.Right - 16))
                 location.X = (playerAreaLimit.Right - 16);
@@ -301,12 +299,5 @@ namespace TurnBase
         {
             fireball.Position = new Point(fireball.Origin.X, 0);
         }
-
-        //public Texture2D MakeTexture(GraphicsDevice graphics)
-        //{
-        //    Texture2D texture = new Texture2D(graphics, 1, 1, false, SurfaceFormat.Color);
-        //    texture.SetData<Color>(new Color[] { Color.Black });
-        //    return texture;
-        //}
     }
 }
