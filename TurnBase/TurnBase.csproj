@@ -57,6 +57,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Actor.cs" />
+    <Compile Include="FrameCounter.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Ground.cs" />
     <Compile Include="Panel.cs" />
@@ -91,6 +92,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Content\fireball.xnb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\fireBtn.xnb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Content\Fonts\debugfont.xnb">

@@ -22,25 +22,28 @@ namespace TurnBase
         private const int PROJECTILE_SPEED = 10;
         private const int LEFT_PANEL = 250;
 
-        private string staticText = "Press Enter to start\nPress Space to change actor\nPress F to fire a fireball";
+        private string staticText = "Press Enter to start\nPress Space to change actor";
         private string actorText = "Current actor selected: ";
 
         private Rectangle playerAreaLimit;
 
         bool isRunning = false;
 
-        Texture2D fillTexture;
-        Texture2D sky;
+        Texture2D fillTexture, sky;
         Ground[] groundTexture = new Ground[100];
-        Actor player;
-        Actor enemy;
+        Actor player, enemy;
         Shot fireball;
         Panel debugPanel;
+
+        Panel buttonFireball;
 
         KeyboardState previousState;
 
         SpriteFont debugText;
         Vector2 debugActorPosition;
+
+        private FrameCounter frames = new FrameCounter();
+        private int mouseX, mouseY;
 
         Turn turn = Turn.Player;
 
@@ -76,6 +79,7 @@ namespace TurnBase
             LoadGround();
             LoadTextPanel();
             LoadPlayer();
+            LoadButtonFireball();
             LoadEnemy();
         }
 
@@ -95,6 +99,14 @@ namespace TurnBase
             debugPanel = new Panel(new Point(0, 0), new Vector2(LEFT_PANEL, SCREEN_HEIGHT))
             {
                 Texture = Content.Load<Texture2D>("panel")
+            };
+        }
+
+        private void LoadButtonFireball()
+        {
+            buttonFireball = new Panel(new Point(LEFT_PANEL + 10, 10), new Vector2(50, 30))
+            {
+                Texture = Content.Load<Texture2D>("fireBtn")
             };
         }
 
@@ -130,6 +142,9 @@ namespace TurnBase
                 Exit();
 
             var keyState = Keyboard.GetState();
+            var mouse = Mouse.GetState();
+            mouseX = mouse.X;
+            mouseY = mouse.Y;
 
             if (isRunning)
             {           
@@ -139,7 +154,7 @@ namespace TurnBase
                 }
 
                 fireball.Update();
-                CheckFire();
+                EnterButton();
 
                 MovementControl(gameTime, keyState, turn);
             }
@@ -217,13 +232,20 @@ namespace TurnBase
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
+            var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            frames.Update(deltaTime);
+            var fps = string.Format("FPS: {0}", frames.AverageFPS);
 
             spriteBatch.Begin(SpriteSortMode.BackToFront, null);
             
             spriteBatch.Draw(sky, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 1f);
             spriteBatch.DrawString(debugText, staticText, new Vector2(10, 10), Color.White);
-            spriteBatch.DrawString(debugText, actorText + turn.ToString(), new Vector2(10, 65), Color.White);
-            spriteBatch.DrawString(debugText, "Position: " + debugActorPosition.ToString(), new Vector2(10, 85), Color.White);
+            spriteBatch.DrawString(debugText, actorText + turn.ToString(), new Vector2(10, 45), Color.White);
+            spriteBatch.DrawString(debugText, "Position: " + debugActorPosition.ToString(), new Vector2(10, 65), Color.White);
+            spriteBatch.DrawString(debugText, fps, new Vector2(10, 85), Color.White);
+            spriteBatch.DrawString(debugText, string.Format("Mouse position: X:{0} Y:{1}", mouseX, mouseY), new Vector2(10, 105), Color.White);
+
+
 
             foreach (var ground in groundTexture)
             {
@@ -232,6 +254,7 @@ namespace TurnBase
 
             debugPanel.Draw(spriteBatch);
             player.Draw(spriteBatch);
+            buttonFireball.Draw(spriteBatch);
             enemy.Draw(spriteBatch);
             fireball.Draw(spriteBatch);
             DebugDraw();
@@ -285,19 +308,23 @@ namespace TurnBase
             }
         }
 
-        private void CheckFire()
+        private void ResetProjectile()
         {
-            if ((turn == Turn.Player) && (Keyboard.GetState().IsKeyDown(Keys.F)) && (fireball.Position.X > SCREEN_WIDTH))
+            fireball.Position = new Point(fireball.Origin.X, 0);
+        }
+
+        public void EnterButton()
+        {
+            var mouse = Mouse.GetState();
+            var mousePosition = new Point(mouse.X, mouse.Y); 
+            Rectangle button = new Rectangle(buttonFireball.Position.X, buttonFireball.Position.Y, (int)buttonFireball.Size.X, (int)buttonFireball.Size.Y);
+
+            if(button.Contains(mousePosition) && (turn == Turn.Player) && (mouse.LeftButton == ButtonState.Pressed) && (fireball.Position.X > SCREEN_WIDTH))
             {
                 int projectileX = (int)player.Position.X;
                 int projectileY = (int)player.Position.Y;
                 fireball.Position = new Point(projectileX, projectileY);
             }
-        }
-
-        private void ResetProjectile()
-        {
-            fireball.Position = new Point(fireball.Origin.X, 0);
         }
     }
 }
