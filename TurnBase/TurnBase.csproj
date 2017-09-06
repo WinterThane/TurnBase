@@ -61,6 +61,7 @@
     <Compile Include="Game1.cs" />
     <Compile Include="Ground.cs" />
     <Compile Include="Panel.cs" />
+    <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shot.cs" />
@@ -98,6 +99,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Content\Fonts\debugfont.xnb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\Fonts\playerstats.xnb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Content\grass.xnb">

@@ -116,3 +116,10 @@
 /processorParam:TextureFormat=Color
 /build:org/fireBtn.png
 
+#begin org/playerstats.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:org/playerstats.spritefont
+

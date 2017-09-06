@@ -31,7 +31,10 @@ namespace TurnBase
 
         Texture2D fillTexture, sky;
         Ground[] groundTexture = new Ground[100];
-        Actor player, enemy;
+        Player player;
+        Panel playerStatsPanel;
+        string playerDamage;
+        Actor enemy;
         Shot fireball;
         Panel debugPanel;
 
@@ -40,6 +43,7 @@ namespace TurnBase
         KeyboardState previousState;
 
         SpriteFont debugText;
+        SpriteFont playerStats;
         Vector2 debugActorPosition;
 
         private FrameCounter frames = new FrameCounter();
@@ -72,6 +76,7 @@ namespace TurnBase
             fireball.Velocity = new Point(PROJECTILE_SPEED, 0);
             fireball.Texture = Content.Load<Texture2D>("fireball");
             debugText = Content.Load<SpriteFont>("Fonts\\debugfont");
+            playerStats = Content.Load<SpriteFont>("Fonts\\playerstats");
 
             fillTexture = Content.Load<Texture2D>("fill");
             sky = Content.Load<Texture2D>("cloudMap");
@@ -79,6 +84,7 @@ namespace TurnBase
             LoadGround();
             LoadTextPanel();
             LoadPlayer();
+            LoadPlayerStatsPanel();
             LoadButtonFireball();
             LoadEnemy();
         }
@@ -104,7 +110,7 @@ namespace TurnBase
 
         private void LoadButtonFireball()
         {
-            buttonFireball = new Panel(new Point(LEFT_PANEL + 10, 10), new Vector2(50, 30))
+            buttonFireball = new Panel(new Point(LEFT_PANEL + 10, (int)playerStatsPanel.Size.Y + 20), new Vector2(50, 30))
             {
                 Texture = Content.Load<Texture2D>("fireBtn")
             };
@@ -113,11 +119,20 @@ namespace TurnBase
 
         private void LoadPlayer()
         {
-            player = new Actor()
+            player = new Player()
             {
                 Sprite = new Sprite(Content.Load<Texture2D>("Player\\player"), 8, 1, 1),
                 Position = new Vector2(LEFT_PANEL + 200, SCREEN_HEIGHT - 80),
-                Depth = 0.5f                
+                Depth = 0.5f,
+                Name = "Winter"
+            };
+        }
+
+        private void LoadPlayerStatsPanel()
+        {
+            playerStatsPanel = new Panel(new Point(LEFT_PANEL + 10, 10), new Vector2(200, 125))
+            {
+                Texture = Content.Load<Texture2D>("panel")
             };
         }
 
@@ -165,6 +180,8 @@ namespace TurnBase
             }
 
             previousState = keyState;
+
+            playerDamage = player.Damage(player.MinMeleeDamage, player.MaxMeleeDamage, player.Strength);
 
             base.Update(gameTime);
         }
@@ -245,7 +262,17 @@ namespace TurnBase
             spriteBatch.DrawString(debugText, fps, new Vector2(10, 85), Color.White);
             spriteBatch.DrawString(debugText, string.Format("Mouse position: X:{0} Y:{1}", mouseX, mouseY), new Vector2(10, 105), Color.White);
 
+            spriteBatch.DrawString(playerStats, "Player: " + player.Name, new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 5), Color.White);
+            spriteBatch.DrawString(playerStats, "Level: " + player.Level.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 20), Color.White);
+            spriteBatch.DrawString(playerStats, "Experience: " + player.Experience.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 35), Color.White);
+            spriteBatch.DrawString(playerStats, "Strength: " + player.Strength.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 50), Color.White);
+            spriteBatch.DrawString(playerStats, "Dexterity: " + player.Dexterity.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 65), Color.White);
+            spriteBatch.DrawString(playerStats, "Intelligence: " + player.Intelligence.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 80), Color.White);
+            spriteBatch.DrawString(playerStats, playerDamage, new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 95), Color.White);
+            spriteBatch.DrawString(playerStats, "Magic damage: unknown", new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 110), Color.White);
 
+
+            spriteBatch.DrawString(debugText, player.Health.ToString(), new Vector2(player.Position.X - 16, player.Position.Y - 35), Color.White);
 
             foreach (var ground in groundTexture)
             {
@@ -254,6 +281,7 @@ namespace TurnBase
 
             debugPanel.Draw(spriteBatch);
             player.Draw(spriteBatch);
+            playerStatsPanel.Draw(spriteBatch);
             buttonFireball.Draw(spriteBatch);
             enemy.Draw(spriteBatch);
             fireball.Draw(spriteBatch);
