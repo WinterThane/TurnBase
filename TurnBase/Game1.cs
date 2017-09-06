@@ -32,6 +32,7 @@ namespace TurnBase
         Texture2D fillTexture, sky;
         Ground[] groundTexture = new Ground[100];
         Player player;
+        Texture2D playerHPbar;
         Panel playerStatsPanel;
         string playerDamage;
         Actor enemy;
@@ -72,14 +73,17 @@ namespace TurnBase
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
             fireball = new Shot();
             fireball.Velocity = new Point(PROJECTILE_SPEED, 0);
             fireball.Texture = Content.Load<Texture2D>("fireball");
+
             debugText = Content.Load<SpriteFont>("Fonts\\debugfont");
             playerStats = Content.Load<SpriteFont>("Fonts\\playerstats");
 
             fillTexture = Content.Load<Texture2D>("fill");
             sky = Content.Load<Texture2D>("cloudMap");
+            playerHPbar = Content.Load<Texture2D>("healthbar");
 
             LoadGround();
             LoadTextPanel();
@@ -186,6 +190,81 @@ namespace TurnBase
             base.Update(gameTime);
         }
 
+        protected override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(Color.Black);
+            var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            frames.Update(deltaTime);
+            var fps = string.Format("FPS: {0}", frames.AverageFPS);
+
+            spriteBatch.Begin(SpriteSortMode.BackToFront, null);
+
+            spriteBatch.Draw(sky, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 1f);
+
+            DrawDebugStats(fps);
+            DrawPlayerStats();
+
+            spriteBatch.DrawString(debugText, player.Health.ToString() + "%", new Vector2(player.Position.X - 16, player.Position.Y - 45), Color.Black);
+
+            foreach (var ground in groundTexture)
+            {
+                ground.Draw(spriteBatch);
+            }
+
+            debugPanel.Draw(spriteBatch);
+            player.Draw(spriteBatch);
+            //hp current bar
+            spriteBatch.Draw(playerHPbar, new Rectangle((int)player.Position.X - 15, (int)player.Position.Y - 29, (int)(playerHPbar.Width * ((double)player.Health / 100)), 8), new Rectangle(0, 10, playerHPbar.Width, 10), Color.Red);
+            //hp bar box
+            spriteBatch.Draw(playerHPbar, new Rectangle((int)player.Position.X - 16, (int)player.Position.Y - 30, playerHPbar.Width, 10), new Rectangle(0, 0, playerHPbar.Width, 10), Color.White);
+            // missing hp
+            spriteBatch.Draw(playerHPbar, new Rectangle((int)player.Position.X - 16, (int)player.Position.Y - 30, playerHPbar.Width, 10), new Rectangle(0, 10, playerHPbar.Width, 10), Color.Gray);
+
+            playerStatsPanel.Draw(spriteBatch);
+            buttonFireball.Draw(spriteBatch);
+            enemy.Draw(spriteBatch);
+            fireball.Draw(spriteBatch);
+            DebugDraw();
+
+            spriteBatch.End();
+
+            base.Draw(gameTime);
+        }
+
+        private void DrawDebugStats(string fps)
+        {
+            spriteBatch.DrawString(debugText, staticText, new Vector2(10, 10), Color.White);
+            spriteBatch.DrawString(debugText, actorText + turn.ToString(), new Vector2(10, 45), Color.White);
+            spriteBatch.DrawString(debugText, "Position: " + debugActorPosition.ToString(), new Vector2(10, 65), Color.White);
+            spriteBatch.DrawString(debugText, fps, new Vector2(10, 85), Color.White);
+            spriteBatch.DrawString(debugText, string.Format("Mouse position: X:{0} Y:{1}", mouseX, mouseY), new Vector2(10, 105), Color.White);
+        }
+
+        private void DrawPlayerStats()
+        {
+            spriteBatch.DrawString(playerStats, "Player: " + player.Name, new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 5), Color.White);
+            spriteBatch.DrawString(playerStats, "Level: " + player.Level.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 20), Color.White);
+            spriteBatch.DrawString(playerStats, "Experience: " + player.Experience.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 35), Color.White);
+            spriteBatch.DrawString(playerStats, "Strength: " + player.Strength.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 50), Color.White);
+            spriteBatch.DrawString(playerStats, "Dexterity: " + player.Dexterity.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 65), Color.White);
+            spriteBatch.DrawString(playerStats, "Intelligence: " + player.Intelligence.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 80), Color.White);
+            spriteBatch.DrawString(playerStats, playerDamage, new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 95), Color.White);
+            spriteBatch.DrawString(playerStats, "Magic damage: unknown", new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 110), Color.White);
+        }
+
+        private void DebugDraw()
+        {
+            Rectangle collisionRect = Actor.Intersect(player.Bounds, enemy.Bounds);
+
+            if (Actor.CheckCollision(player, enemy))
+                spriteBatch.Draw(fillTexture, collisionRect, new Color(255, 0, 0, 128));
+            else
+                spriteBatch.Draw(fillTexture, collisionRect, new Color(0, 255, 0, 128));
+
+            //spriteBatch.Draw(player.Sprite.Texture, Vector2.Zero, player.NormalizeBounds(collisionRect), Color.White);
+            //spriteBatch.Draw(enemy.Sprite.Texture, Vector2.Zero, enemy.NormalizeBounds(collisionRect), Color.White);
+        }
+
         private void MovementControl(GameTime gameTime, KeyboardState keyState, Turn setTurn)
         {
             var direction = Vector2.Zero;
@@ -244,65 +323,6 @@ namespace TurnBase
                 debugActorPosition = enemy.Position;
                 enemy.Position += direction * PLAYER_SPEED;
             }
-        }
-
-        protected override void Draw(GameTime gameTime)
-        {
-            GraphicsDevice.Clear(Color.Black);
-            var deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-            frames.Update(deltaTime);
-            var fps = string.Format("FPS: {0}", frames.AverageFPS);
-
-            spriteBatch.Begin(SpriteSortMode.BackToFront, null);
-            
-            spriteBatch.Draw(sky, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 1.3f, SpriteEffects.None, 1f);
-            spriteBatch.DrawString(debugText, staticText, new Vector2(10, 10), Color.White);
-            spriteBatch.DrawString(debugText, actorText + turn.ToString(), new Vector2(10, 45), Color.White);
-            spriteBatch.DrawString(debugText, "Position: " + debugActorPosition.ToString(), new Vector2(10, 65), Color.White);
-            spriteBatch.DrawString(debugText, fps, new Vector2(10, 85), Color.White);
-            spriteBatch.DrawString(debugText, string.Format("Mouse position: X:{0} Y:{1}", mouseX, mouseY), new Vector2(10, 105), Color.White);
-
-            spriteBatch.DrawString(playerStats, "Player: " + player.Name, new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 5), Color.White);
-            spriteBatch.DrawString(playerStats, "Level: " + player.Level.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 20), Color.White);
-            spriteBatch.DrawString(playerStats, "Experience: " + player.Experience.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 35), Color.White);
-            spriteBatch.DrawString(playerStats, "Strength: " + player.Strength.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 50), Color.White);
-            spriteBatch.DrawString(playerStats, "Dexterity: " + player.Dexterity.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 65), Color.White);
-            spriteBatch.DrawString(playerStats, "Intelligence: " + player.Intelligence.ToString(), new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 80), Color.White);
-            spriteBatch.DrawString(playerStats, playerDamage, new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 95), Color.White);
-            spriteBatch.DrawString(playerStats, "Magic damage: unknown", new Vector2(playerStatsPanel.Position.X + 10, playerStatsPanel.Position.Y + 110), Color.White);
-
-
-            spriteBatch.DrawString(debugText, player.Health.ToString(), new Vector2(player.Position.X - 16, player.Position.Y - 35), Color.White);
-
-            foreach (var ground in groundTexture)
-            {
-                ground.Draw(spriteBatch);
-            }
-
-            debugPanel.Draw(spriteBatch);
-            player.Draw(spriteBatch);
-            playerStatsPanel.Draw(spriteBatch);
-            buttonFireball.Draw(spriteBatch);
-            enemy.Draw(spriteBatch);
-            fireball.Draw(spriteBatch);
-            DebugDraw();
-
-            spriteBatch.End();
-
-            base.Draw(gameTime);
-        }
-
-        private void DebugDraw()
-        {
-            Rectangle collisionRect = Actor.Intersect(player.Bounds, enemy.Bounds);
-
-            if (Actor.CheckCollision(player, enemy))
-                spriteBatch.Draw(fillTexture, collisionRect, new Color(255, 0, 0, 128));
-            else
-                spriteBatch.Draw(fillTexture, collisionRect, new Color(0, 255, 0, 128));
-
-            //spriteBatch.Draw(player.Sprite.Texture, Vector2.Zero, player.NormalizeBounds(collisionRect), Color.White);
-            //spriteBatch.Draw(enemy.Sprite.Texture, Vector2.Zero, enemy.NormalizeBounds(collisionRect), Color.White);
         }
 
         private void ImposeMovingLimits(Actor actor)

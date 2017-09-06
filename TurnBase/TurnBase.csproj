@@ -107,6 +107,9 @@
     <None Include="Content\grass.xnb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Content\healthbar.xnb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Content\panel.xnb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

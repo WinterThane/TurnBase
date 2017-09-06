@@ -14,7 +14,7 @@ namespace TurnBase
         private int level = 1;
         private int experience = 0;
 
-        private int health = 100;
+        private int health = 60;
         private int mana = 100;   
 
         private int strength = 75;
