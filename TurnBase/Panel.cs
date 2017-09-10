@@ -3,17 +3,19 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace TurnBase
 {
-    class Panel
+    public class Panel
     {
         public Texture2D Texture;
         public Point Position;
         public Vector2 Size;
+        public string Text = "";
         private Rectangle textBox;
 
-        public Panel(Point position, Vector2 size)
+        public Panel(Point position, Vector2 size, string text)
         {
             Position = position;
             Size = size;
+            Text = text;
             textBox = new Rectangle(Position.X, Position.Y, (int)Size.X, (int)Size.Y);
         }
 

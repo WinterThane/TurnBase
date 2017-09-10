@@ -1,11 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TurnBase
+﻿namespace TurnBase
 {
     class Player : Actor
     {
@@ -86,11 +79,8 @@ namespace TurnBase
 
         public string Damage(float min, float max, int str)
         {
-            string result = "";
             float newMax = min + 1f;
-            result = "Physical damage: " + min.ToString() + " - " + (newMax * str / 100).ToString();
-
-            return result;
+            return "Physical damage: " + min.ToString() + " - " + (newMax * str / 100).ToString();
         }
     }
 }
