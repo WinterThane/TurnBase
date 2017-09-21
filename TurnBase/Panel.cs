@@ -11,6 +11,13 @@ namespace TurnBase
         public string Text = "";
         private Rectangle textBox;
 
+        public Panel(Point position, Vector2 size)
+        {
+            Position = position;
+            Size = size;
+            textBox = new Rectangle(Position.X, Position.Y, (int)Size.X, (int)Size.Y);
+        }
+
         public Panel(Point position, Vector2 size, string text)
         {
             Position = position;

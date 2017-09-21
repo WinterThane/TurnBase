@@ -41,8 +41,7 @@ namespace TurnBase.Screens
             spriteBatch.DrawString(titleText, instuctions, new Vector2(10, 10), Color.Azure);
             spriteBatch.DrawString(titleText, enterGame.Text, new Vector2(enterGame.Position.X + 10, enterGame.Position.Y + 5), Color.Red);
             spriteBatch.DrawString(titleText, exitGame.Text, new Vector2(exitGame.Position.X + 10, exitGame.Position.Y + 5), Color.Red);
-            spriteBatch.Draw(titleScreen, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.9f);
-            
+            spriteBatch.Draw(titleScreen, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0.9f);           
         }
     }
 }

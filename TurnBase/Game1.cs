@@ -457,7 +457,7 @@ namespace TurnBase
 
         private void DrawCombatScreen(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.Black);
+            GraphicsDevice.Clear(Color.MediumBlue);
             spriteBatch.Begin(SpriteSortMode.BackToFront, null);
             combatScreen.Draw(spriteBatch);
             spriteBatch.End();
