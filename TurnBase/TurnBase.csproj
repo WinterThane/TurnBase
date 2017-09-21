@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="Actor.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="Enemies\Skeleton.cs" />
     <Compile Include="FrameCounter.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Ground.cs" />

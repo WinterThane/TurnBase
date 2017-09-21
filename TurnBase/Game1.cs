@@ -1,7 +1,7 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using TurnBase.Enemies;
 
 namespace TurnBase
 {
@@ -39,7 +39,7 @@ namespace TurnBase
         Texture2D playerHPbar;
         Panel playerStatsPanel;
         string playerDamage;
-        Actor enemy;
+        Skeleton skeleton;
         Shot fireball;
         Panel debugPanel;
 
@@ -97,14 +97,15 @@ namespace TurnBase
             playerHPbar = Content.Load<Texture2D>("healthbar");
 
             titleScreen = new Screens.TitleScreen(Content);
-            combatScreen = new Screens.CombatScreen(Content);
-
+            
             LoadGround();
             LoadTextPanel();
             LoadPlayer();
             LoadPlayerStatsPanel();
             LoadButtonFireball();
             LoadEnemy();
+
+            combatScreen = new Screens.CombatScreen(Content, player.Initination, skeleton.Initination);
         }
 
         private void LoadGround()
@@ -155,11 +156,12 @@ namespace TurnBase
 
         private void LoadEnemy()
         {
-            enemy = new Actor()
+            skeleton = new Skeleton()
             {
                 Sprite = new Sprite(Content.Load<Texture2D>("Enemy\\enemy"), 8, 1, 1),
                 Position = new Vector2(Config.SCREEN_WIDTH - 200, Config.SCREEN_HEIGHT - 80),
-                Depth = 0.5f
+                Depth = 0.5f,
+                Name = "Skeleton"
             };
         }
 
@@ -250,9 +252,9 @@ namespace TurnBase
             if (keyState.IsKeyDown(Keys.Escape) && !previousState.IsKeyDown(Keys.Escape))
                 CurrentGameState = GameStates.TitleScreen;
 
-            if (Actor.CheckCollision(player, enemy))
+            if (Actor.CheckCollision(player, skeleton))
             {
-                player.Position.X = enemy.Position.X - 50;
+                player.Position.X = skeleton.Position.X - 50;
                 CurrentGameState = GameStates.CombatScreen;
                 return;
             }
@@ -294,8 +296,13 @@ namespace TurnBase
         {
             var keyState = Keyboard.GetState();
 
-            if (keyState.IsKeyDown(Keys.Escape) && !previousState.IsKeyDown(Keys.Escape))               
+            if (keyState.IsKeyDown(Keys.Escape) && !previousState.IsKeyDown(Keys.Escape))
+            {
+                combatScreen.combatText = "";
                 CurrentGameState = GameStates.TravelScreen;
+            }
+
+            combatScreen.Update(gameTime);
         }
 
         private void SetTurn()
@@ -351,22 +358,22 @@ namespace TurnBase
                 if (keyState.IsKeyDown(Keys.S))
                 {
                     direction.Y++;
-                    enemy.Update(gameTime, keyState);
+                    skeleton.Update(gameTime, keyState);
                 }
                 if (keyState.IsKeyDown(Keys.A))
                 {
                     direction.X--;
-                    enemy.Update(gameTime, keyState);
+                    skeleton.Update(gameTime, keyState);
                 }
                 if (keyState.IsKeyDown(Keys.D))
                 {
                     direction.X++;
-                    enemy.Update(gameTime, keyState);
+                    skeleton.Update(gameTime, keyState);
                 }
 
-                ImposeMovingLimits(enemy);
-                debugActorPosition = enemy.Position;
-                enemy.Position += direction * Config.PLAYER_SPEED;
+                ImposeMovingLimits(skeleton);
+                debugActorPosition = skeleton.Position;
+                skeleton.Position += direction * Config.PLAYER_SPEED;
             }
         }
 
@@ -448,7 +455,7 @@ namespace TurnBase
             playerStatsPanel.Draw(spriteBatch);
 
             buttonFireball.Draw(spriteBatch);
-            enemy.Draw(spriteBatch);
+            skeleton.Draw(spriteBatch);
             fireball.Draw(spriteBatch);
             DebugDraw();
 
@@ -498,9 +505,9 @@ namespace TurnBase
 
         private void DebugDraw()
         {
-            Rectangle collisionRect = Actor.Intersect(player.Bounds, enemy.Bounds);
+            Rectangle collisionRect = Actor.Intersect(player.Bounds, skeleton.Bounds);
 
-            if (Actor.CheckCollision(player, enemy))
+            if (Actor.CheckCollision(player, skeleton))
                 spriteBatch.Draw(fillTexture, collisionRect, new Color(255, 0, 0, 128));
             else
                 spriteBatch.Draw(fillTexture, collisionRect, new Color(0, 255, 0, 128));

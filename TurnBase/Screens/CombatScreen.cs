@@ -11,13 +11,27 @@ namespace TurnBase.Screens
         Texture2D enemyCombat;
         SpriteFont titleText;
         SpriteFont combatTextFont;
-        private string combatText = "combat text here ** combat text here ** combat text here ** combat text here ** combat text here ** combat text here ** combat text here ** ";
+        public string combatText = "";
+
+        String wrappedText = "";
+        String typedText = "";
+        double typedTextLength;
+        int delayInMilliseconds = 50;
+        bool isDoneDrawing = false;
+
+        int playerInitiation;
+        int enemyInitiation;
+
+        int turns = 1;
+
         private string title = "Combat screen\nPress ESC to exit";
 
         Panel combatTextPanel; 
 
-        public CombatScreen(ContentManager content)
+        public CombatScreen(ContentManager content, int playerInit, int enemyInit)
         {
+            playerInitiation = playerInit;
+            enemyInitiation = enemyInit;
             playerCombat = content.Load<Texture2D>("Player\\wizardCombat");
             enemyCombat = content.Load<Texture2D>("Enemy\\skeletonCombat");
 
@@ -30,10 +44,45 @@ namespace TurnBase.Screens
             combatTextFont = content.Load<SpriteFont>("Fonts\\debugfont");
         }
 
+        public void Update(GameTime gameTime)
+        {   
+            if(playerInitiation >= enemyInitiation)
+            {
+                combatText = "Players initiation is higher.\nTurn " + turns + ": Player starts.";
+            }
+            else
+            {
+                combatText = "Enemies initiation is higher.\nTurn " + turns + ": Enemy starts.";
+            }
+
+            wrappedText = WrapText(combatText);
+
+            if (!isDoneDrawing)
+            {
+                if (delayInMilliseconds == 0)
+                {
+                    typedText = wrappedText;
+                    isDoneDrawing = true;
+                }
+                else if (typedTextLength < wrappedText.Length)
+                {
+                    typedTextLength = typedTextLength + gameTime.ElapsedGameTime.TotalMilliseconds / delayInMilliseconds;
+
+                    if (typedTextLength >= wrappedText.Length)
+                    {
+                        typedTextLength = wrappedText.Length;
+                        isDoneDrawing = true;
+                    }
+
+                    typedText = wrappedText.Substring(0, (int)typedTextLength);
+                }
+            }
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
             combatTextPanel.Draw(spriteBatch);
-            spriteBatch.DrawString(combatTextFont, WrapText(combatText), new Vector2(combatTextPanel.Position.X + 5, combatTextPanel.Position.Y + 5), Color.White);
+            spriteBatch.DrawString(combatTextFont, typedText, new Vector2(combatTextPanel.Position.X + 5, combatTextPanel.Position.Y + 5), Color.White);
 
             spriteBatch.DrawString(titleText, title, new Vector2(Config.SCREEN_WIDTH / 2 - 50, 20), Color.Azure);
 

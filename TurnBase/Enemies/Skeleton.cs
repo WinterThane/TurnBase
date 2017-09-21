@@ -1,22 +1,22 @@
-﻿namespace TurnBase
+﻿namespace TurnBase.Enemies
 {
-    class Player : Actor
+    class Skeleton : Actor
     {
         private string name = "";
 
         private int level = 1;
         private int experience = 0;
 
-        private int health = 60;
-        private int mana = 100;   
+        private int health = 200;
+        private int mana = 0;
 
-        private int strength = 75;
-        private int dexterity = 60;
-        private int intelligence = 70;
-        private int initination = 55;
+        private int strength = 55;
+        private int dexterity = 40;
+        private int intelligence = 20;
+        private int initination = 50;
 
         private float minMeleeDmg = 1f;
-        private float maxMeleeDmg = 1f;
+        private float maxMeleeDmg = 2f;
 
         public string Name
         {
