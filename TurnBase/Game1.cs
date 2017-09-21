@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -25,7 +26,7 @@ namespace TurnBase
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        private string staticText = "Press Enter to start\nPress Space to change actor";
+        private string staticText = "Press Space to change actor";
         private string actorText = "Current actor selected: ";
 
         private Rectangle playerAreaLimit;
@@ -51,6 +52,7 @@ namespace TurnBase
         Vector2 debugActorPosition;
 
         Screens.TitleScreen titleScreen;
+        Screens.CombatScreen combatScreen;
 
         private FrameCounter frames = new FrameCounter();
         private double elapsedTime = 0d;
@@ -95,6 +97,7 @@ namespace TurnBase
             playerHPbar = Content.Load<Texture2D>("healthbar");
 
             titleScreen = new Screens.TitleScreen(Content);
+            combatScreen = new Screens.CombatScreen(Content);
 
             LoadGround();
             LoadTextPanel();
@@ -130,7 +133,6 @@ namespace TurnBase
                 Texture = Content.Load<Texture2D>("fireBtn")
             };
         }
-
 
         private void LoadPlayer()
         {
@@ -182,6 +184,10 @@ namespace TurnBase
                 case GameStates.TravelScreen:
                     UpdateTravelScreen(gameTime);
                     break;
+
+                case GameStates.CombatScreen:
+                    UpdateCombatScreen(gameTime);
+                    break;
             }
 
             previousState = keyState;
@@ -199,6 +205,10 @@ namespace TurnBase
 
                 case GameStates.TravelScreen:
                     DrawTravelScreen(gameTime);
+                    break;
+
+                case GameStates.CombatScreen:
+                    DrawCombatScreen(gameTime);
                     break;
             }
 
@@ -240,6 +250,13 @@ namespace TurnBase
             if (keyState.IsKeyDown(Keys.Escape) && !previousState.IsKeyDown(Keys.Escape))
                 CurrentGameState = GameStates.TitleScreen;
 
+            if (Actor.CheckCollision(player, enemy))
+            {
+                player.Position.X = enemy.Position.X - 50;
+                CurrentGameState = GameStates.CombatScreen;
+                return;
+            }
+
             if (keyState.IsKeyDown(Keys.P) && !previousState.IsKeyDown(Keys.P))
             {
                 if (isPaused)
@@ -265,12 +282,20 @@ namespace TurnBase
                 }
 
                 fireball.Update();
-                FireFireBallButton();               
+                FireFireBallButton();
 
                 MovementControl(gameTime, keyState, turn);
             }
 
-            previousState = keyState;           
+            previousState = keyState;
+        }
+
+        private void UpdateCombatScreen(GameTime gameTime)
+        {
+            var keyState = Keyboard.GetState();
+
+            if (keyState.IsKeyDown(Keys.Escape) && !previousState.IsKeyDown(Keys.Escape))               
+                CurrentGameState = GameStates.TravelScreen;
         }
 
         private void SetTurn()
@@ -430,6 +455,14 @@ namespace TurnBase
             spriteBatch.End();
         }
 
+        private void DrawCombatScreen(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(Color.Black);
+            spriteBatch.Begin(SpriteSortMode.BackToFront, null);
+            combatScreen.Draw(spriteBatch);
+            spriteBatch.End();
+        }
+
         private void DrawPlayerHealthBar()
         {
             //hp current bar
@@ -443,11 +476,11 @@ namespace TurnBase
         private void DrawDebugStats(string fps)
         {
             spriteBatch.DrawString(debugText, staticText, new Vector2(10, 10), Color.White);
-            spriteBatch.DrawString(debugText, actorText + turn.ToString(), new Vector2(10, 45), Color.White);
-            spriteBatch.DrawString(debugText, "Position: " + debugActorPosition.ToString(), new Vector2(10, 65), Color.White);
-            spriteBatch.DrawString(debugText, fps, new Vector2(10, 85), Color.White);
-            spriteBatch.DrawString(debugText, string.Format("Mouse position: X:{0} Y:{1}", mouseX, mouseY), new Vector2(10, 105), Color.White);
-            spriteBatch.DrawString(debugText, "Elapsed time: " + elapsedTime.ToString("#.####"), new Vector2(10, 125), Color.White);
+            spriteBatch.DrawString(debugText, actorText + turn.ToString(), new Vector2(10, 30), Color.White);
+            spriteBatch.DrawString(debugText, "Position: " + debugActorPosition.ToString(), new Vector2(10, 50), Color.White);
+            spriteBatch.DrawString(debugText, fps, new Vector2(10, 70), Color.White);
+            spriteBatch.DrawString(debugText, string.Format("Mouse position: X:{0} Y:{1}", mouseX, mouseY), new Vector2(10, 90), Color.White);
+            spriteBatch.DrawString(debugText, "Elapsed time: " + elapsedTime.ToString("#.####"), new Vector2(10, 110), Color.White);
         }
 
         private void DrawPlayerStats()
@@ -477,6 +510,6 @@ namespace TurnBase
         }
 
         #endregion
- 
+
     }
 }
