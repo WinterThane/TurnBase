@@ -105,6 +105,9 @@
     <None Include="Content\fireBtn.xnb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Content\Fonts\combatText.xnb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Content\Fonts\debugfont.xnb">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

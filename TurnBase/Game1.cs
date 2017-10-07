@@ -5,12 +5,6 @@ using TurnBase.Enemies;
 
 namespace TurnBase
 {
-    enum Turn
-    {
-        Player,
-        Enemy
-    }
-
     enum GameStates
     {
         TitleScreen,
@@ -26,9 +20,6 @@ namespace TurnBase
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        private string staticText = "Press Space to change actor";
-        private string actorText = "Current actor selected: ";
-
         private Rectangle playerAreaLimit;
 
         bool isRunning = false;
@@ -36,13 +27,13 @@ namespace TurnBase
         Texture2D fillTexture, sky;
         Ground[] groundTexture = new Ground[100];
         Player player;
-        Texture2D playerHPbar;
+        
         Panel playerStatsPanel;
         string playerDamage;
         Skeleton skeleton;
         Shot fireball;
         Panel debugPanel;
-
+        
         Panel buttonFireball;
 
         KeyboardState previousState;
@@ -59,8 +50,7 @@ namespace TurnBase
         private int mouseX, mouseY;
 
         private bool isPaused = true;
-
-        Turn turn = Turn.Player;
+       
         GameStates CurrentGameState = GameStates.TitleScreen;
 
         public Game1()
@@ -94,7 +84,6 @@ namespace TurnBase
 
             fillTexture = Content.Load<Texture2D>("fill");
             sky = Content.Load<Texture2D>("cloudMap");
-            playerHPbar = Content.Load<Texture2D>("healthbar");
 
             titleScreen = new Screens.TitleScreen(Content);
             
@@ -233,6 +222,13 @@ namespace TurnBase
 
             if ((keyState.IsKeyDown(Keys.Enter) && !previousState.IsKeyDown(Keys.Enter)) || (EnterGamebutton.Contains(mousePosition) && (mouse.LeftButton == ButtonState.Pressed)))
             {
+                //Thread.Sleep(1000);
+                //float tick = 0f;
+                //while (tick < 1f)
+                //{
+                //    titleScreen.Update(gameTime);
+                //    tick += 0.01f;
+                //}
                 CurrentGameState = GameStates.TravelScreen;
                 isRunning = true;
                 ResetProjectile();
@@ -242,6 +238,8 @@ namespace TurnBase
             {
                 Exit();
             }
+
+            titleScreen.Update(gameTime);
         }
 
         private void UpdateTravelScreen(GameTime gameTime)
@@ -278,15 +276,10 @@ namespace TurnBase
                 mouseX = mouse.X;
                 mouseY = mouse.Y;
 
-                if (keyState.IsKeyDown(Keys.Space) && !previousState.IsKeyDown(Keys.Space))
-                {
-                    SetTurn();
-                }
-
                 fireball.Update();
                 FireFireBallButton();
 
-                MovementControl(gameTime, keyState, turn);
+                MovementControl(gameTime, keyState);
             }
 
             previousState = keyState;
@@ -295,86 +288,44 @@ namespace TurnBase
         private void UpdateCombatScreen(GameTime gameTime)
         {
             var keyState = Keyboard.GetState();
+            combatScreen.Initinalize();
 
             if (keyState.IsKeyDown(Keys.Escape) && !previousState.IsKeyDown(Keys.Escape))
             {
-                combatScreen.combatText = "";
                 CurrentGameState = GameStates.TravelScreen;
             }
 
             combatScreen.Update(gameTime);
-        }
+        }  
 
-        private void SetTurn()
-        {
-            if (turn == Turn.Player)
-            {
-                turn = Turn.Enemy;
-            }
-            else
-            {
-                turn = Turn.Player;
-            }
-        }
-
-        private void MovementControl(GameTime gameTime, KeyboardState keyState, Turn setTurn)
+        private void MovementControl(GameTime gameTime, KeyboardState keyState)
         {
             var direction = Vector2.Zero;
 
-            if (setTurn == Turn.Player)
+            //if (keyState.IsKeyDown(Keys.W))
+            //{
+            //    direction.Y--;
+            //    player.Update(gameTime, keyState);
+            //}
+            if (keyState.IsKeyDown(Keys.S))
             {
-                //if (keyState.IsKeyDown(Keys.W))
-                //{
-                //    direction.Y--;
-                //    player.Update(gameTime, keyState);
-                //}
-                if (keyState.IsKeyDown(Keys.S))
-                {
-                    direction.Y++;
-                    player.Update(gameTime, keyState);
-                }
-                if (keyState.IsKeyDown(Keys.A))
-                {
-                    direction.X--;
-                    player.Update(gameTime, keyState);
-                }
-                if (keyState.IsKeyDown(Keys.D))
-                {
-                    direction.X++;
-                    player.Update(gameTime, keyState);
-                }
-
-                ImposeMovingLimits(player);
-                debugActorPosition = player.Position;
-                player.Position += direction * Config.PLAYER_SPEED;
+                direction.Y++;
+                player.Update(gameTime, keyState);
             }
-            else
+            if (keyState.IsKeyDown(Keys.A))
             {
-                //if (keyState.IsKeyDown(Keys.W))
-                //{
-                //    direction.Y--;
-                //    enemy.Update(gameTime, keyState);
-                //}
-                if (keyState.IsKeyDown(Keys.S))
-                {
-                    direction.Y++;
-                    skeleton.Update(gameTime, keyState);
-                }
-                if (keyState.IsKeyDown(Keys.A))
-                {
-                    direction.X--;
-                    skeleton.Update(gameTime, keyState);
-                }
-                if (keyState.IsKeyDown(Keys.D))
-                {
-                    direction.X++;
-                    skeleton.Update(gameTime, keyState);
-                }
-
-                ImposeMovingLimits(skeleton);
-                debugActorPosition = skeleton.Position;
-                skeleton.Position += direction * Config.PLAYER_SPEED;
+                direction.X--;
+                player.Update(gameTime, keyState);
             }
+            if (keyState.IsKeyDown(Keys.D))
+            {
+                direction.X++;
+                player.Update(gameTime, keyState);
+            }
+
+            ImposeMovingLimits(player);
+            debugActorPosition = player.Position;
+            player.Position += direction * Config.PLAYER_SPEED;        
         }
 
         private void ImposeMovingLimits(Actor actor)
@@ -407,7 +358,7 @@ namespace TurnBase
             var mousePosition = new Point(mouse.X, mouse.Y);
             Rectangle button = new Rectangle(buttonFireball.Position.X, buttonFireball.Position.Y, (int)buttonFireball.Size.X, (int)buttonFireball.Size.Y);
 
-            if (button.Contains(mousePosition) && (turn == Turn.Player) && (mouse.LeftButton == ButtonState.Pressed) && (fireball.Position.X > Config.SCREEN_WIDTH))
+            if (button.Contains(mousePosition) && (mouse.LeftButton == ButtonState.Pressed) && (fireball.Position.X > Config.SCREEN_WIDTH))
             {
                 int projectileX = (int)player.Position.X;
                 int projectileY = (int)player.Position.Y;
@@ -451,7 +402,6 @@ namespace TurnBase
             debugPanel.Draw(spriteBatch);
 
             player.Draw(spriteBatch);
-            DrawPlayerHealthBar();
             playerStatsPanel.Draw(spriteBatch);
 
             buttonFireball.Draw(spriteBatch);
@@ -468,26 +418,14 @@ namespace TurnBase
             spriteBatch.Begin(SpriteSortMode.BackToFront, null);
             combatScreen.Draw(spriteBatch);
             spriteBatch.End();
-        }
-
-        private void DrawPlayerHealthBar()
-        {
-            //hp current bar
-            spriteBatch.Draw(playerHPbar, new Rectangle((int)player.Position.X - 15, (int)player.Position.Y - 29, (int)(playerHPbar.Width * ((double)player.Health / 100)), 8), new Rectangle(0, 10, playerHPbar.Width, 10), Color.Red);
-            //hp bar box
-            spriteBatch.Draw(playerHPbar, new Rectangle((int)player.Position.X - 16, (int)player.Position.Y - 30, playerHPbar.Width, 10), new Rectangle(0, 0, playerHPbar.Width, 10), Color.White);
-            // missing hp
-            spriteBatch.Draw(playerHPbar, new Rectangle((int)player.Position.X - 16, (int)player.Position.Y - 30, playerHPbar.Width, 10), new Rectangle(0, 10, playerHPbar.Width, 10), Color.Gray);
-        }
+        }    
 
         private void DrawDebugStats(string fps)
         {
-            spriteBatch.DrawString(debugText, staticText, new Vector2(10, 10), Color.White);
-            spriteBatch.DrawString(debugText, actorText + turn.ToString(), new Vector2(10, 30), Color.White);
-            spriteBatch.DrawString(debugText, "Position: " + debugActorPosition.ToString(), new Vector2(10, 50), Color.White);
-            spriteBatch.DrawString(debugText, fps, new Vector2(10, 70), Color.White);
-            spriteBatch.DrawString(debugText, string.Format("Mouse position: X:{0} Y:{1}", mouseX, mouseY), new Vector2(10, 90), Color.White);
-            spriteBatch.DrawString(debugText, "Elapsed time: " + elapsedTime.ToString("#.####"), new Vector2(10, 110), Color.White);
+            spriteBatch.DrawString(debugText, "Position: " + debugActorPosition.ToString(), new Vector2(10, 10), Color.White);
+            spriteBatch.DrawString(debugText, fps, new Vector2(10, 30), Color.White);
+            spriteBatch.DrawString(debugText, string.Format("Mouse position: X:{0} Y:{1}", mouseX, mouseY), new Vector2(10, 50), Color.White);
+            spriteBatch.DrawString(debugText, "Elapsed time: " + elapsedTime.ToString("#.####"), new Vector2(10, 70), Color.White);
         }
 
         private void DrawPlayerStats()

@@ -5,13 +5,21 @@ using System;
 
 namespace TurnBase.Screens
 {
+    enum Turn
+    {
+        Player,
+        Enemy
+    }
+
     public class CombatScreen
     {
         Texture2D playerCombat;
+        Texture2D playerHPbar;
+
         Texture2D enemyCombat;
         SpriteFont titleText;
         SpriteFont combatTextFont;
-        public string combatText = "";
+        private string combatText = "";
 
         String wrappedText = "";
         String typedText = "";
@@ -19,14 +27,18 @@ namespace TurnBase.Screens
         int delayInMilliseconds = 50;
         bool isDoneDrawing = false;
 
+        bool idDoneLoading = false;
+
         int playerInitiation;
         int enemyInitiation;
 
         int turns = 1;
+        Turn turn = Turn.Player;
+        private bool isPlayerTurnDone = false;
 
         private string title = "Combat screen\nPress ESC to exit";
 
-        Panel combatTextPanel; 
+        Panel combatTextPanel;
 
         public CombatScreen(ContentManager content, int playerInit, int enemyInit)
         {
@@ -41,12 +53,13 @@ namespace TurnBase.Screens
             };
 
             titleText = content.Load<SpriteFont>("Fonts\\debugfont");
-            combatTextFont = content.Load<SpriteFont>("Fonts\\debugfont");
+            combatTextFont = content.Load<SpriteFont>("Fonts\\combatText");
+            playerHPbar = content.Load<Texture2D>("healthbar");
         }
 
-        public void Update(GameTime gameTime)
-        {   
-            if(playerInitiation >= enemyInitiation)
+        public void Initinalize()
+        {
+            if (playerInitiation >= enemyInitiation)
             {
                 combatText = "Players initiation is higher.\nTurn " + turns + ": Player starts.";
             }
@@ -54,6 +67,11 @@ namespace TurnBase.Screens
             {
                 combatText = "Enemies initiation is higher.\nTurn " + turns + ": Enemy starts.";
             }
+        }
+
+        public void Update(GameTime gameTime)
+        {
+
 
             wrappedText = WrapText(combatText);
 
@@ -86,9 +104,34 @@ namespace TurnBase.Screens
 
             spriteBatch.DrawString(titleText, title, new Vector2(Config.SCREEN_WIDTH / 2 - 50, 20), Color.Azure);
 
+            DrawPlayerHealthBar(spriteBatch);
             spriteBatch.Draw(playerCombat, new Vector2(10, 20), null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
+
+            //DrawEnemyHealthBar(spriteBatch);
             spriteBatch.Draw(enemyCombat, new Vector2(Config.SCREEN_WIDTH - enemyCombat.Width - 10, 20), null, Color.White, 0f, Vector2.Zero, 1f, SpriteEffects.None, 1f);
+
+            
         }
+
+        private void DrawPlayerHealthBar(SpriteBatch spriteBatch)
+        {
+            //hp current bar
+            spriteBatch.Draw(playerHPbar, new Rectangle(10, 10, (int)(playerHPbar.Width * ((double)65 / 100)), 8), new Rectangle(0, 10, playerHPbar.Width, 10), Color.Red);
+            //hp bar box
+            spriteBatch.Draw(playerHPbar, new Rectangle(10, 10, playerHPbar.Width, 10), new Rectangle(0, 0, playerHPbar.Width, 10), Color.White);
+            // missing hp
+            spriteBatch.Draw(playerHPbar, new Rectangle(10, 10, playerHPbar.Width, 10), new Rectangle(0, 10, playerHPbar.Width, 10), Color.Gray);
+        }
+
+        //private void DrawEnemyHealthBar(SpriteBatch spriteBatch)
+        //{
+        //    //hp current bar
+        //    spriteBatch.Draw(playerHPbar, new Rectangle((int)player.Position.X - 15, (int)player.Position.Y - 29, (int)(playerHPbar.Width * ((double)player.Health / 100)), 8), new Rectangle(0, 10, playerHPbar.Width, 10), Color.Red);
+        //    //hp bar box
+        //    spriteBatch.Draw(playerHPbar, new Rectangle((int)player.Position.X - 16, (int)player.Position.Y - 30, playerHPbar.Width, 10), new Rectangle(0, 0, playerHPbar.Width, 10), Color.White);
+        //    // missing hp
+        //    spriteBatch.Draw(playerHPbar, new Rectangle((int)player.Position.X - 16, (int)player.Position.Y - 30, playerHPbar.Width, 10), new Rectangle(0, 10, playerHPbar.Width, 10), Color.Gray);
+        //}
 
         private String WrapText(String text)
         {
@@ -109,5 +152,17 @@ namespace TurnBase.Screens
 
             return returnString + line;
         }
+
+        //private void SetTurn()
+        //{
+        //    if (turn == Turn.Player)
+        //    {
+        //        turn = Turn.Enemy;
+        //    }
+        //    else
+        //    {
+        //        turn = Turn.Player;
+        //    }
+        //}
     }
 }

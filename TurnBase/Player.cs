@@ -7,7 +7,7 @@
         private int level = 1;
         private int experience = 0;
 
-        private int health = 60;
+        private int health = 150;
         private int mana = 100;   
 
         private int strength = 75;

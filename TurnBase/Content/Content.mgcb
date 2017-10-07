@@ -171,3 +171,10 @@
 /processorParam:TextureFormat=Color
 /build:org/wizardComabt.png
 
+#begin org/combatText.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:org/combatText.spritefont
+
