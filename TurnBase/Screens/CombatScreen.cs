@@ -53,7 +53,7 @@ namespace TurnBase.Screens
             };
 
             titleText = content.Load<SpriteFont>("Fonts\\debugfont");
-            combatTextFont = content.Load<SpriteFont>("Fonts\\combatText");
+            combatTextFont = content.Load<SpriteFont>("Fonts\\debugfont");
             playerHPbar = content.Load<Texture2D>("healthbar");
         }
 
